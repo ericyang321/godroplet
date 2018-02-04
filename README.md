@@ -1,1 +1,1 @@
-[godroplet.io](www.godroplet.io)
+[godroplet.io](http://www.godroplet.io)

@@ -2,12 +2,12 @@ package main
 
 import (
     "fmt"
+    "github.com/ericyang321/godrople/util"
     "log"
     "net/http"
 )
 
-func handler(res http.ResponseWriter, req *http.Request) {
-    // Echo HTTPS Request
+func infoHandler(res http.ResponseWriter, req *http.Request) {
     fmt.Fprintf(res, "%s %s %s \n", req.Method, req.URL, req.Proto)
 
     for k, v := range req.Header {
@@ -25,8 +25,13 @@ func handler(res http.ResponseWriter, req *http.Request) {
     }
 }
 
+func tempHandler(res http.ResponseWriter, req *http.Request) {
+
+}
+
 func main() {
     fmt.Println("Up and Running at :3000")
-    http.HandleFunc("/", handler)
+    http.HandleFunc("/", infoHandler)
+    http.HandleFunc("/temperature", tempHandler)
     log.Fatal(http.ListenAndServe(":3000", nil))
 }

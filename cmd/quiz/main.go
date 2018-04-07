@@ -6,42 +6,24 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 )
-
-// Error interface
-type Error interface {
-	Error() string
-}
 
 type problem struct {
 	question string
 	answer   string
 }
 
-// func timer(seconds int) <-chan bool {
-// 	done := make(chan bool)
-// 	// Initiate timer
-// 	go func() {
-// 		time.Sleep(time.Duration(seconds) * time.Second)
-// 		done <- true
-// 	}()
-// 	return done
-// }
-
 func terminate(s string) {
 	fmt.Println(s)
 	os.Exit(1)
 }
 
-func getFile() *os.File {
-	// dir := path.Join("/Users/ericyang/Documents/Home/go/src/github.com/ericyang321/godroplet/cmd/quiz", s)
+func getFile(fileName string) *os.File {
 	// Any flag.String lists will throw
-	fileName := flag.String("csv", "problems.csv", "a CSV in the format of question, answer")
-	flag.Parse()
-
-	file, err := os.Open(*fileName)
+	file, err := os.Open(fileName)
 	if err != nil {
-		terminate(fmt.Sprintf("Failed to open CSV file: %s\n", *fileName))
+		terminate(fmt.Sprintf("Failed to open CSV file: %s\n", fileName))
 	}
 	return file
 }
@@ -57,36 +39,47 @@ func parseLines(lines [][]string) []problem {
 	return problems
 }
 
-func checkAnswer(userAnswer string, realAnswer string) bool {
-	if userAnswer == realAnswer {
-		return true
-	}
-	return false
+func funnelUserAnswer(answerCh chan string) {
+	var userAnswer string
+	// Answer needs to be a pointer address because fmt.Scanf does
+	// direct assignment on user input. We're not in dynamic type land anymore...
+	fmt.Scanf("%s \n", &userAnswer)
+	answerCh <- userAnswer
 }
 
 // Learn about: flags, CSV, OS, time package.
 func main() {
-	csvFile := getFile()
+	fileName := flag.String("csv", "problems.csv", "a CSV in the format of question, answer")
+	timeLimit := flag.Int("limit", 30, "Quiz time limit in seconds")
+	flag.Parse()
+
+	csvFile := getFile(*fileName)
+
 	defer csvFile.Close()
 	reader := csv.NewReader(csvFile)
 	lines, err := reader.ReadAll()
 	if err != nil {
-		terminate(fmt.Sprintf("Failed to parse theCSV file: %s \n", err.Error()))
+		terminate(fmt.Sprintf("Failed to parse the CSV file: %s \n", err.Error()))
 	}
 	parsedProblems := parseLines(lines)
 
 	score := 0
+
+	timer := time.NewTimer(time.Duration(*timeLimit) * time.Second)
+
 	for i, entry := range parsedProblems {
-		var userAnswer string
 		fmt.Printf("Problem #%d: %s = ? \n", i+1, entry.question)
-		// Answer needs to be a pointer address because fmt.Scanf does
-		// direct assignment on user input. We're not in dynamic type land anymore...
-		fmt.Scanf("%s \n", &userAnswer)
-		isCorrect := checkAnswer(userAnswer, entry.answer)
-		if isCorrect == true {
-			score++
+		answerCh := make(chan string)
+		go funnelUserAnswer(answerCh)
+
+		select {
+		case <-timer.C:
+			terminate(fmt.Sprintf("\nTime's up! You scored %d out of %d \n", score, len(parsedProblems)))
+		case answer := <-answerCh:
+			if answer == entry.answer {
+				score++
+			}
 		}
 	}
-
 	fmt.Printf("You scored %d out of %d \n", score, len(parsedProblems))
 }

@@ -1,7 +1,11 @@
 package main
 
-import "github.com/ericyang321/godroplet/algo/stringworks"
+import (
+	"fmt"
+
+	"github.com/ericyang321/godroplet/algo/stringworks"
+)
 
 func main() {
-	stringworks.IsPermutation("word", "wordd")
+	fmt.Println(stringworks.Zip("abcdefghijk"))
 }

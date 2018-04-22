@@ -101,6 +101,30 @@ func (L *List) Pop() (*Node, *ErrLinkedList) {
 	return g, nil
 }
 
+// IsCircular determines if the LinkedList is circular and self repeating.
+func (L *List) IsCircular() (bool, *ErrLinkedList) {
+	if L.head == nil {
+		return false, NewErrLinkedList("List is empty. ")
+	}
+	if L.head.next == nil {
+		return false, nil
+	}
+	slowerRunner := L.head
+	fasterRunner := L.head.next
+
+	for slowerRunner != nil && fasterRunner != nil {
+		if slowerRunner == fasterRunner {
+			return true, nil
+		}
+		if slowerRunner.next == nil || fasterRunner.next == nil || fasterRunner.next.next == nil {
+			return false, nil
+		}
+		slowerRunner = slowerRunner.next
+		fasterRunner = fasterRunner.next.next
+	}
+	return false, nil
+}
+
 // Print prints out all values inside the linked list, in order from head to tail
 func (L *List) Print() string {
 	if L.head == nil {

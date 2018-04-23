@@ -30,5 +30,4 @@
   unused-packages = true
 
 [metadata.heroku]
-  root-package = "github.com/ericyang321/godroplet/tree/master/website"
-  ensure = "true"
+  root-package = "github.com/ericyang321/godroplet"

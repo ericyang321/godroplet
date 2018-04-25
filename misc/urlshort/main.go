@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/ericyang321/godroplet/urlshort/handler"
+	"github.com/ericyang321/godroplet/misc/urlshort/handler"
 )
 
 var pathsToUrls = map[string]string{

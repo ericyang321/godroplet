@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/ericyang321/godroplet/misc/algo/linkedlist"
+	"github.com/ericyang321/godroplet/src/algo/linkedlist"
 	"github.com/kr/pretty"
 )
 

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{.Title}}</title>
+</head>
+<body>
+  <h2>{{.Title}}</h2>
+  <div class="story">
+    {{range .Story}}
+      <p>{{.}}</p>
+    {{end}}
+  </div>
+  <div class="options">
+    <em>Your options:</em>
+    {{range $option := .Options}}
+      <div>
+        <a href="/{{$option.Arc}}">{{$option.Text}}</a>
+      </div>
+    {{end}}
+  </div>
+</body>
+</html>

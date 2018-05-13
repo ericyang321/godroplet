@@ -31,3 +31,7 @@
 
 [metadata.heroku]
   root-package = "github.com/ericyang321/godroplet"
+
+[[constraint]]
+  branch = "master"
+  name = "golang.org/x/net"

@@ -5,12 +5,18 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	link "github.com/ericyang321/godroplet/src/linkParser"
 )
 
 func determineListenAddress() (string, error) {
 	port := os.Getenv("PORT")
+	env := os.Getenv("ENV")
 	if port == "" {
 		return "", fmt.Errorf("$PORT not set")
+	}
+	if env == "development" {
+		return "localhost:" + port, nil
 	}
 	return ":" + port, nil
 }
@@ -36,8 +42,11 @@ func main() {
 		log.Fatal(err)
 	}
 	mux := http.NewServeMux()
+	// Routes
 	mux.HandleFunc("/", hello)
+	mux.HandleFunc("/parse-link-tags", link.HandlerFunc)
 
+	// Force HTTPS redirect
 	secureMux := redirectTLS(mux)
 	log.Printf("Listening on %s ...\n", addr)
 	log.Fatal(http.ListenAndServe(addr, secureMux))

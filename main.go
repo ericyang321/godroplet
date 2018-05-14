@@ -21,10 +21,6 @@ func determineListenAddress() (string, error) {
 	return ":" + port, nil
 }
 
-func hello(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "Hello World!")
-}
-
 func redirectTLS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		proto := r.Header.Get("x-forwarded-proto")
@@ -43,7 +39,8 @@ func main() {
 	}
 	mux := http.NewServeMux()
 	// Routes
-	mux.HandleFunc("/", hello)
+	// Personal website:
+	mux.Handle("/", http.FileServer(http.Dir("./src/assets")))
 	mux.HandleFunc("/parse-link-tags", link.HandlerFunc)
 
 	// Force HTTPS redirect

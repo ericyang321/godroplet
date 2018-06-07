@@ -1,4 +1,4 @@
-package link
+package linkparser
 
 import (
 	"encoding/json"

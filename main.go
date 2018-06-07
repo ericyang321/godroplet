@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	link "github.com/ericyang321/godroplet/src/linkParser"
+	"github.com/ericyang321/godroplet/src/linkparser"
 )
 
 func determineListenAddress() (string, error) {
@@ -41,7 +41,7 @@ func main() {
 	// Routes
 	// Personal website:
 	mux.Handle("/", http.FileServer(http.Dir("./src/assets")))
-	mux.HandleFunc("/parse-link-tags", link.HandlerFunc)
+	mux.HandleFunc("/parse-link-tags", linkparser.HandlerFunc)
 
 	// Force HTTPS redirect
 	secureMux := redirectTLS(mux)

@@ -15,7 +15,7 @@ var doublyNestedH1 = `
 <!DOCTYPE html>
 <html>
 <body>
-	<h1 class="outer-h1">
+	<h1 class="outer-h1" disabled>
 		<div>
 			<h1 class="inner-h1">
 				Tada
@@ -37,9 +37,16 @@ func TestGrep(t *testing.T) {
 
 	// method run
 	nodeList := Grep(rootNode, isH1)
-	l := len(nodeList)
 
 	// result comparison
+	for _, nodePointer := range nodeList {
+		n := *nodePointer
+		if n.DataAtom != atom.H1 {
+			t.Errorf("Expected nodes found to all be H1, but instead found a %s", n.Data)
+			return
+		}
+	}
+	l := len(nodeList)
 	if l != 1 {
 		t.Errorf("Expected 1 H1 nodes to be found, but instead found %d", l)
 	}
@@ -55,9 +62,16 @@ func TestDeepGrep(t *testing.T) {
 
 	// method run
 	nodeList := DeepGrep(rootNode, isH1)
-	l := len(nodeList)
 
 	// result comparison
+	for _, nodePointer := range nodeList {
+		n := *nodePointer
+		if n.DataAtom != atom.H1 {
+			t.Errorf("Expected nodes found to all be H1, but instead found a %s", n.Data)
+			return
+		}
+	}
+	l := len(nodeList)
 	if l != 2 {
 		t.Errorf("Expected 2 H1 nodes to be found, but instead found %d", l)
 	}

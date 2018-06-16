@@ -14,6 +14,11 @@ import (
 var doublyNestedH1 = `
 <!DOCTYPE html>
 <html>
+<head>
+	<script type="text/javascript">
+		var i = 10;
+	</script>
+</head>
 <body>
 	<h1 class="outer-h1" disabled>
 		<div>
@@ -21,13 +26,14 @@ var doublyNestedH1 = `
 				Tada
 			</h1>
 		</div>
+		<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 	</h1>
 </body>
 </html>
 `
 
 // tests
-func TestGrep(t *testing.T) {
+func TestFindAllShallow(t *testing.T) {
 	// setup
 	rootNode, parseErr := html.Parse(strings.NewReader(doublyNestedH1))
 	if parseErr != nil {
@@ -36,7 +42,7 @@ func TestGrep(t *testing.T) {
 	}
 
 	// method run
-	nodeList := Grep(rootNode, isH1)
+	nodeList := FindAllShallow(rootNode, isH1)
 
 	// result comparison
 	for _, nodePointer := range nodeList {
@@ -52,7 +58,7 @@ func TestGrep(t *testing.T) {
 	}
 }
 
-func TestDeepGrep(t *testing.T) {
+func TestFindAllDeep(t *testing.T) {
 	// setup
 	rootNode, parseErr := html.Parse(strings.NewReader(doublyNestedH1))
 	if parseErr != nil {
@@ -61,7 +67,7 @@ func TestDeepGrep(t *testing.T) {
 	}
 
 	// method run
-	nodeList := DeepGrep(rootNode, isH1)
+	nodeList := FindAllDeep(rootNode, isH1)
 
 	// result comparison
 	for _, nodePointer := range nodeList {
@@ -74,6 +80,26 @@ func TestDeepGrep(t *testing.T) {
 	l := len(nodeList)
 	if l != 2 {
 		t.Errorf("Expected 2 H1 nodes to be found, but instead found %d", l)
+	}
+}
+
+func TestRemoveScriptNodes(t *testing.T) {
+	// setup
+	rootNode, parseErr := html.Parse(strings.NewReader(doublyNestedH1))
+	if parseErr != nil {
+		t.Errorf("HTML Parse error: %s", parseErr.Error())
+		return
+	}
+
+	// method run
+	RemoveScriptNodes(rootNode)
+	nodeList := FindAllDeep(rootNode, isScriptNode)
+
+	// result comparison
+	for _, np := range nodeList {
+		if isScriptNode(np) {
+			t.Errorf("Expected no script nodes to be found, but instead found some: %v", nodeList)
+		}
 	}
 }
 

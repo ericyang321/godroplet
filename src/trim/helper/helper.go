@@ -1,6 +1,10 @@
 package helper
 
-import "golang.org/x/net/html"
+import (
+	"fmt"
+
+	"golang.org/x/net/html"
+)
 
 // Matcher is user passable function to decide which nodes to fetch
 type Matcher func(*html.Node) bool
@@ -34,4 +38,13 @@ func depthFirstSearch(n *html.Node, matcher Matcher, deep bool) []*html.Node {
 		}
 	}
 	return matched
+}
+
+// RemoveNode deletes a selected node from DOM Tree
+func RemoveNode(n *html.Node) error {
+	parentNode := n.Parent
+	if parentNode == nil {
+		return fmt.Errorf("Node cannot be deleted without an existing parent node")
+	}
+	parentNode.RemoveChild(n)
 }

@@ -22,21 +22,11 @@ func FindAllDeep(n *html.Node, matcher Matcher) []*html.Node {
 	return depthFirstSearch(n, matcher, true)
 }
 
-// RemoveNode deletes a selected node from DOM Tree
-func RemoveNode(n *html.Node) error {
-	parentNode := n.Parent
-	if parentNode == nil {
-		return fmt.Errorf("Node cannot be deleted without an existing parent node")
-	}
-	parentNode.RemoveChild(n)
-	return nil
-}
-
-// RemoveScriptNodes iterates html document and delete all script nodes
-func RemoveScriptNodes(n *html.Node) {
-	scriptNodes := FindAllShallow(n, isScriptNode)
-	for _, np := range scriptNodes {
-		RemoveNode(np)
+// RemoveScriptStyleNodes iterates DOM tree and deletes all script, style, link, and noscript nodes
+func RemoveScriptStyleNodes(n *html.Node) {
+	nodes := FindAllShallow(n, isScriptStyleNode)
+	for _, np := range nodes {
+		removeNode(np)
 	}
 }
 
@@ -67,4 +57,34 @@ func isScriptNode(n *html.Node) bool {
 	a := n.DataAtom
 	return a == atom.Script ||
 		a == atom.Noscript
+}
+
+func isStyleNode(n *html.Node) bool {
+	a := n.DataAtom
+	return a == atom.Style ||
+		a == atom.Link
+}
+
+func isScriptStyleNode(n *html.Node) bool {
+	return compose(isStyleNode, isScriptNode)(n)
+}
+
+func compose(matchers ...Matcher) func(n *html.Node) bool {
+	return func(n *html.Node) bool {
+		for _, matcher := range matchers {
+			if m := matcher(n); m == false {
+				return false
+			}
+		}
+		return true
+	}
+}
+
+func removeNode(n *html.Node) error {
+	parentNode := n.Parent
+	if parentNode == nil {
+		return fmt.Errorf("Node cannot be deleted without an existing parent node")
+	}
+	parentNode.RemoveChild(n)
+	return nil
 }

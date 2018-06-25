@@ -5,6 +5,9 @@ import (
 	"golang.org/x/net/html/atom"
 )
 
+// Matcher is user passable function to decide which nodes to fetch
+type Matcher func(*html.Node) bool
+
 // IsPhrasingContent Determine if a node qualifies as phrasing content.
 // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Content_categories#Phrasing_content
 func IsPhrasingContent(n *html.Node) bool {
@@ -71,4 +74,28 @@ func children(n *html.Node) []*html.Node {
 		matched = append(matched, f)
 	}
 	return matched
+}
+
+func IsScript(n *html.Node) bool {
+	a := n.DataAtom
+	return a == atom.Script ||
+		a == atom.Noscript
+}
+
+func IsStyle(n *html.Node) bool {
+	a := n.DataAtom
+	return a == atom.Style ||
+		a == atom.Link
+}
+
+func IsBr(n *html.Node) bool {
+	return n != nil && n.DataAtom == atom.Br
+}
+
+func IsH1(n *html.Node) bool {
+	return n.DataAtom == atom.H1
+}
+
+func IsP(n *html.Node) bool {
+	return n.DataAtom == atom.P
 }

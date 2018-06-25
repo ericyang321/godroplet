@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	h "github.com/ericyang321/godroplet/src/trim/helper"
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
 )
@@ -44,7 +45,7 @@ var rootNode = getRoot(exampleHTML)
 // tests
 func TestFindAllShallow(t *testing.T) {
 	// method run
-	nodeList := FindAllShallow(rootNode, isH1)
+	nodeList := FindAllShallow(rootNode, h.IsH1)
 
 	// result comparison
 	for _, nodePointer := range nodeList {
@@ -62,7 +63,7 @@ func TestFindAllShallow(t *testing.T) {
 
 func TestFindAllDeep(t *testing.T) {
 	// method run
-	nodeList := FindAllDeep(rootNode, isH1)
+	nodeList := FindAllDeep(rootNode, h.IsH1)
 
 	// result comparison
 	for _, nodePointer := range nodeList {
@@ -79,13 +80,14 @@ func TestFindAllDeep(t *testing.T) {
 }
 
 func TestRemoveScriptStyleNodes(t *testing.T) {
+	isScriptAndStyle := Compose(h.IsScript, h.IsStyle)
 	// method run
 	RemoveScriptStyleNodes(rootNode)
-	nodeList := FindAllDeep(rootNode, isScriptStyle)
+	nodeList := FindAllDeep(rootNode, isScriptAndStyle)
 
 	// result comparison
 	for _, np := range nodeList {
-		if isScriptStyle(np) {
+		if isScriptAndStyle(np) {
 			t.Errorf("Expected no script nodes to be found, but instead found some: %v", nodeList)
 		}
 	}
@@ -100,12 +102,12 @@ func TestReplaceBrs(t *testing.T) {
 	// EXPECTED: <div>foo<br>bar<p>abc</p></div>
 	ReplaceBrs(root)
 
-	brNodes := FindAllDeep(root, isBr)
+	brNodes := FindAllDeep(root, h.IsBr)
 	lenBr := len(brNodes)
 	if lenBr != 1 {
 		t.Errorf("Expected 1 <br> present, but instead found %d", lenBr)
 	}
-	pNodes := FindAllDeep(root, isP)
+	pNodes := FindAllDeep(root, h.IsP)
 	lenP := len(pNodes)
 	if lenP != 1 {
 		t.Errorf("Expected 1 <p> present, but instead found %d", lenP)
@@ -115,14 +117,6 @@ func TestReplaceBrs(t *testing.T) {
 // ------------------------------------------------------
 // --------------------- HELPERS ------------------------
 // ------------------------------------------------------
-
-func isH1(n *html.Node) bool {
-	return n.DataAtom == atom.H1
-}
-
-func isP(n *html.Node) bool {
-	return n.DataAtom == atom.P
-}
 
 func getRoot(str string) *html.Node {
 	root, err := html.Parse(strings.NewReader(str))

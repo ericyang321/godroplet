@@ -5,9 +5,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/ericyang321/godroplet/src/trim/helper"
+	h "github.com/ericyang321/godroplet/src/trim/helper"
 	"golang.org/x/net/html"
-	"golang.org/x/net/html/atom"
 )
 
 // Matcher is user passable function to decide which nodes to fetch
@@ -27,7 +26,8 @@ func FindAllDeep(n *html.Node, matcher Matcher) []*html.Node {
 
 // RemoveScriptStyleNodes iterates DOM tree and deletes all <script>, <style>, <link>, and <noscript> nodes
 func RemoveScriptStyleNodes(n *html.Node) {
-	nodes := FindAllShallow(n, isScriptStyle)
+	isScriptAndStyle := Compose(h.IsScript, h.IsStyle)
+	nodes := FindAllShallow(n, isScriptAndStyle)
 	for _, np := range nodes {
 		removeNode(np)
 	}
@@ -36,12 +36,12 @@ func RemoveScriptStyleNodes(n *html.Node) {
 // ReplaceBrs replaces 2 or more consecutive <br> nodes with a single <p> node
 // whitespace between <br> elements are ignored.
 func ReplaceBrs(n *html.Node) {
-	nodes := FindAllDeep(n, isBr)
+	nodes := FindAllDeep(n, h.IsBr)
 	for _, br := range nodes {
 		next := br.NextSibling
 		replaced := false
 		// delete chained <br>s after the first <br> found
-		for ; isBr(next); next = next.NextSibling {
+		for ; h.IsBr(next); next = next.NextSibling {
 			next = nextElement(next)
 			replaced = true
 			removeNode(next)
@@ -54,13 +54,13 @@ func ReplaceBrs(n *html.Node) {
 			next = p.NextSibling
 			for next != nil {
 				// If we've hit another damn <br>, then we're done adding children to this <p>
-				if isBr(next) {
+				if h.IsBr(next) {
 					pNextElem := nextElement(next.NextSibling)
-					if isBr(pNextElem) {
+					if h.IsBr(pNextElem) {
 						break
 					}
 				}
-				if !helper.IsPhrasingContent(next) {
+				if !h.IsPhrasingContent(next) {
 					break
 				}
 				// Otherwise, make this node a child of the new <p>.
@@ -70,6 +70,18 @@ func ReplaceBrs(n *html.Node) {
 				next = sibling
 			}
 		}
+	}
+}
+
+// Compose combines various helper matchers into a single matcher
+func Compose(matchers ...Matcher) Matcher {
+	return func(n *html.Node) bool {
+		for _, matcher := range matchers {
+			if m := matcher(n); m == false {
+				return false
+			}
+		}
+		return true
 	}
 }
 
@@ -93,37 +105,6 @@ func depthFirstSearch(n *html.Node, matcher Matcher, deep bool) []*html.Node {
 		}
 	}
 	return matched
-}
-
-func isScript(n *html.Node) bool {
-	a := n.DataAtom
-	return a == atom.Script ||
-		a == atom.Noscript
-}
-
-func isStyle(n *html.Node) bool {
-	a := n.DataAtom
-	return a == atom.Style ||
-		a == atom.Link
-}
-
-func isBr(n *html.Node) bool {
-	return n != nil && n.DataAtom == atom.Br
-}
-
-func isScriptStyle(n *html.Node) bool {
-	return compose(isStyle, isScript)(n)
-}
-
-func compose(matchers ...Matcher) Matcher {
-	return func(n *html.Node) bool {
-		for _, matcher := range matchers {
-			if m := matcher(n); m == false {
-				return false
-			}
-		}
-		return true
-	}
 }
 
 func removeNode(n *html.Node) error {

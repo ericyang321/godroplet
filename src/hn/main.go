@@ -5,18 +5,35 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"time"
 
 	hn "github.com/ericyang321/godroplet/src/hn/client"
 )
+
+var cache []hn.Article
+var cacheExpiration time.Time
 
 type templateData struct {
 	Articles []hn.Article
 }
 
+func getArticles(num int) ([]hn.Article, error) {
+	if time.Now().Sub(cacheExpiration) < 0 {
+		return cache, nil
+	}
+	var c hn.Client
+	articles, err := c.GuaranteedTopArticles(num)
+	if err != nil {
+		return nil, err
+	}
+	cache = articles
+	cacheExpiration = time.Now().Add(1 * time.Second)
+	return cache, nil
+}
+
 func createHNHandler(num int, tpl *template.Template) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var c hn.Client
-		articles, err := c.GuaranteedTopArticles(num)
+		articles, err := getArticles(num)
 		if err != nil {
 			handleFailure(w, err)
 			return

@@ -97,6 +97,7 @@ func (c *Client) GetItem(id int) (Item, error) {
 // and will guarantee number requested when fetch errors may be encountered
 func (c *Client) GuaranteedTopArticles(num int) ([]Article, error) {
 	c.init()
+
 	topIDs, err := c.GetTopIds()
 	var articles []Article
 	if err != nil {
@@ -116,6 +117,7 @@ func (c *Client) GuaranteedTopArticles(num int) ([]Article, error) {
 // GetArticles fetches and inserts articles based on whatever list of hacker news IDs passed in
 func (c *Client) GetArticles(ids []int) []Article {
 	c.init()
+
 	receiver := make(chan pylon)
 	length := len(ids)
 	for idx := 0; idx < length; idx++ {
@@ -137,6 +139,7 @@ func (c *Client) GetArticles(ids []int) []Article {
 
 func (c *Client) asyncFetch(idx int, id int, receiver chan pylon) {
 	c.init()
+
 	item, err := c.GetItem(id)
 	if err != nil {
 		receiver <- pylon{idx: idx, err: err}

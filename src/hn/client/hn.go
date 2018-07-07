@@ -93,19 +93,36 @@ func (c *Client) GetItem(id int) (Item, error) {
 	return item, nil
 }
 
-// GetArticles fetches top num of articles
-func (c *Client) GetArticles(num int) ([]Article, error) {
+// GuaranteedTopArticles will fetch number of articles from params
+// and will guarantee number requested when fetch errors may be encountered
+func (c *Client) GuaranteedTopArticles(num int) ([]Article, error) {
 	c.init()
 	topIDs, err := c.GetTopIds()
-	receiver := make(chan pylon)
+	var articles []Article
 	if err != nil {
-		return nil, err
+		return articles, err
 	}
-	for idx := 0; idx < num; idx++ {
-		go c.asyncFetch(idx, topIDs[idx], receiver)
+	position := 0
+	for len(articles) < num {
+		need := num - len(articles)
+		fetchedArticles := c.GetArticles(topIDs[position : position+need])
+		articles = append(articles, fetchedArticles...)
+		position += need
+	}
+
+	return articles[:num], nil
+}
+
+// GetArticles fetches and inserts articles based on whatever list of hacker news IDs passed in
+func (c *Client) GetArticles(ids []int) []Article {
+	c.init()
+	receiver := make(chan pylon)
+	length := len(ids)
+	for idx := 0; idx < length; idx++ {
+		go c.asyncFetch(idx, ids[idx], receiver)
 	}
 	var pylons []pylon
-	for idx := 0; idx < num; idx++ {
+	for idx := 0; idx < length; idx++ {
 		py := <-receiver
 		if py.err != nil {
 			continue
@@ -115,7 +132,7 @@ func (c *Client) GetArticles(num int) ([]Article, error) {
 	sortPylons(&pylons)
 	articles := createArticles(&pylons)
 
-	return articles, nil
+	return articles
 }
 
 func (c *Client) asyncFetch(idx int, id int, receiver chan pylon) {
@@ -130,8 +147,7 @@ func (c *Client) asyncFetch(idx int, id int, receiver chan pylon) {
 
 func isStory(item Item) bool {
 	t := item.Type
-
-	return (t == "story" || t == "job" || t == "poll") && item.URL != ""
+	return (t == "story" || t == "job" || t == "poll" || t == "pollopt") && item.URL != ""
 }
 
 func sortPylons(pylons *[]pylon) {

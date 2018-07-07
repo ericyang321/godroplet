@@ -16,7 +16,7 @@ type templateData struct {
 func createHNHandler(num int, tpl *template.Template) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var c hn.Client
-		articles, err := c.GetArticles(num)
+		articles, err := c.GuaranteedTopArticles(num)
 		if err != nil {
 			handleFailure(w, err)
 			return

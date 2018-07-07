@@ -5,19 +5,25 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"sync"
 	"time"
 
 	hn "github.com/ericyang321/godroplet/src/hn/client"
 )
 
-var cache []hn.Article
-var cacheExpiration time.Time
+var (
+	cache           []hn.Article
+	cacheExpiration time.Time
+	cacheMutex      sync.Mutex
+)
 
 type templateData struct {
 	Articles []hn.Article
 }
 
 func getArticles(num int) ([]hn.Article, error) {
+	cacheMutex.Lock()
+	defer cacheMutex.Unlock()
 	if time.Now().Sub(cacheExpiration) < 0 {
 		return cache, nil
 	}
@@ -27,7 +33,7 @@ func getArticles(num int) ([]hn.Article, error) {
 		return nil, err
 	}
 	cache = articles
-	cacheExpiration = time.Now().Add(1 * time.Second)
+	cacheExpiration = time.Now().Add(10 * time.Minute)
 	return cache, nil
 }
 

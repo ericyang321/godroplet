@@ -1,44 +1,42 @@
 package main
 
 import (
-	"encoding/json"
+	"fmt"
+	"html/template"
+	"log"
 	"net/http"
 
-	"github.com/kr/pretty"
+	hn "github.com/ericyang321/godroplet/src/hn/client"
 )
 
-const apiURL = "https://hacker-news.firebaseio.com/v0"
-
-func getTopStories(topIDs *[]int) error {
-	res, getErr := http.Get(apiURL + "/topstories.json")
-	if getErr != nil {
-		return getErr
-	}
-	defer res.Body.Close()
-	decodeErr := json.NewDecoder(res.Body).Decode(topIDs)
-	if decodeErr != nil {
-		return decodeErr
-	}
-	return nil
+type templateData struct {
+	Articles []hn.Article
 }
 
-func filterThirty(topIDs []int) []int {
-	if len(topIDs) <= 30 {
-		return topIDs
+func createHNHandler(num int, tpl *template.Template) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var c hn.Client
+		articles, err := c.GetArticles(num)
+		if err != nil {
+			handleFailure(w, err)
+			return
+		}
+		tmpldata := templateData{Articles: articles}
+		err = tpl.Execute(w, tmpldata)
+		if err != nil {
+			handleFailure(w, err)
+			return
+		}
 	}
-	onlyThirtyIds := make([]int, 30)
-	for i := 0; i < 30; i++ {
-		onlyThirtyIds[i] = topIDs[i]
-	}
-	return onlyThirtyIds
+}
+
+func handleFailure(w http.ResponseWriter, err error) {
+	fmt.Fprintf(w, "You fucked up real bad: \n"+err.Error())
 }
 
 func main() {
-	topIDs := make([]int, 100)
-	fetchErr := getTopStories(&topIDs)
-	if fetchErr != nil {
-		panic(fetchErr.Error())
-	}
-	topThirtyIDs := filterThirty(topIDs)
-	pretty.Println(topThirtyIDs)
+	tpl := template.Must(template.ParseFiles("./index.html"))
+	http.HandleFunc("/", createHNHandler(30, tpl))
+
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", 3000), nil))
 }

@@ -39,7 +39,6 @@ func main() {
 	}
 	mux := http.NewServeMux()
 	// Routes
-	// Personal website:
 	mux.Handle("/", http.FileServer(http.Dir("./src/assets")))
 	mux.HandleFunc("/parse-link-tags", linkparser.HandlerFunc)
 

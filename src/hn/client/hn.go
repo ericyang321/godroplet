@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"sort"
 	"strings"
 )
 
@@ -45,6 +46,7 @@ type Article struct {
 
 // pylon is used to relay successfully decoded Item or error through go channel
 type pylon struct {
+	idx  int
 	item Item
 	err  error
 }
@@ -94,42 +96,64 @@ func (c *Client) GetItem(id int) (Item, error) {
 // GetArticles fetches top num of articles
 func (c *Client) GetArticles(num int) ([]Article, error) {
 	c.init()
-	var articles []Article
 	topIDs, err := c.GetTopIds()
+	receiver := make(chan pylon)
 	if err != nil {
 		return nil, err
 	}
-	for _, id := range topIDs {
-		receiver := make(chan pylon)
-		go c.asyncFetch(id, receiver)
-
+	for idx := 0; idx < num; idx++ {
+		go c.asyncFetch(idx, topIDs[idx], receiver)
+	}
+	var pylons []pylon
+	for idx := 0; idx < num; idx++ {
 		py := <-receiver
-
 		if py.err != nil {
 			continue
-		} else {
-			article := createArticle(py.item)
-			articles = append(articles, article)
 		}
-		if len(articles) >= num {
-			break
-		}
+		pylons = append(pylons, py)
 	}
+	sortPylons(&pylons)
+	articles := createArticles(&pylons)
+
 	return articles, nil
 }
 
-func (c *Client) asyncFetch(id int, receiver chan pylon) {
+func (c *Client) asyncFetch(idx int, id int, receiver chan pylon) {
 	c.init()
 	item, err := c.GetItem(id)
 	if err != nil {
-		receiver <- pylon{err: err}
+		receiver <- pylon{idx: idx, err: err}
 		return
 	}
-	receiver <- pylon{item: item}
+	receiver <- pylon{idx: idx, item: item}
 }
 
-func isStory(article Article) bool {
-	return article.Type == "story" && article.URL != ""
+func isStory(item Item) bool {
+	t := item.Type
+
+	return (t == "story" || t == "job" || t == "poll") && item.URL != ""
+}
+
+func sortPylons(pylons *[]pylon) {
+	pys := *pylons
+	sort.SliceStable(pys, func(i, j int) bool {
+		return pys[i].idx < pys[j].idx
+	})
+}
+
+func createArticles(pylons *[]pylon) []Article {
+	pys := *pylons
+	var articles []Article
+	for _, py := range pys {
+		if py.err != nil {
+			continue
+		}
+		if isStory(py.item) {
+			article := createArticle(py.item)
+			articles = append(articles, article)
+		}
+	}
+	return articles
 }
 
 func createArticle(item Item) Article {

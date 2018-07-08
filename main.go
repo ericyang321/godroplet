@@ -9,7 +9,7 @@ import (
 	"time"
 
 	worker "github.com/ericyang321/godroplet/src/hn"
-	"github.com/ericyang321/godroplet/src/linkparser"
+	linkparser "github.com/ericyang321/godroplet/src/linkParser"
 )
 
 func determineListenAddress() (string, error) {

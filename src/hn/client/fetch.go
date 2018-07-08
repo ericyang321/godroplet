@@ -1,4 +1,4 @@
-package hn
+package fetch
 
 import (
 	"encoding/json"
@@ -110,7 +110,6 @@ func (c *Client) GuaranteedTopArticles(num int) ([]Article, error) {
 		articles = append(articles, fetchedArticles...)
 		position += need
 	}
-
 	return articles[:num], nil
 }
 

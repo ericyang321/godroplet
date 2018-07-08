@@ -2,10 +2,13 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
+	"time"
 
+	worker "github.com/ericyang321/godroplet/src/hn"
 	"github.com/ericyang321/godroplet/src/linkparser"
 )
 
@@ -37,10 +40,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	hnTemplate := template.Must(template.ParseFiles("./assets/hn/index.html"))
 	mux := http.NewServeMux()
 	// Routes
-	mux.Handle("/", http.FileServer(http.Dir("./src/assets")))
+	mux.Handle("/", http.FileServer(http.Dir("./assets/personal")))
 	mux.HandleFunc("/parse-link-tags", linkparser.HandlerFunc)
+	mux.Handle("/hn", worker.CreateHNHandler(30, 10*time.Minute, hnTemplate))
 
 	// Force HTTPS redirect
 	secureMux := redirectTLS(mux)

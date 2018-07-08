@@ -14,7 +14,11 @@ type templateData struct {
 	Articles []fetch.Article
 }
 
-// Worker is
+// TODO: Separate worker's dependency on package fetch, and instead have Worker be pased in
+// a fetcher interface
+
+// Worker is a configurable periodic cache updater for scrapped hacker news articles.
+// Work works in conjunction with package fetch.
 type Worker struct {
 	cache         *[]fetch.Article
 	numOfArticles int
@@ -30,8 +34,7 @@ func (w *Worker) InitializeTimer() {
 		for {
 			articles, err := f.GuaranteedTopArticles(w.numOfArticles)
 			if err != nil {
-				log.Printf("============ ERROR: ===========")
-				log.Printf(err.Error())
+				printErr(err.Error())
 			}
 
 			w.mutex.Lock()
@@ -43,12 +46,13 @@ func (w *Worker) InitializeTimer() {
 	}()
 }
 
-// CreateHNHandler generates HTTP handler
+// CreateHNHandler generates a convenient HTTP handler that initializes a single worker, which
+// updates and fetches top 30 articles hacker news articles every 15 minutes.
 func CreateHNHandler(num int, duration time.Duration, tpl *template.Template) http.HandlerFunc {
 	var cache []fetch.Article
 	worker := Worker{
 		numOfArticles: 30,
-		tickDuration:  1 * time.Second,
+		tickDuration:  15 * time.Minute,
 		cache:         &cache,
 	}
 	worker.InitializeTimer()
@@ -59,8 +63,12 @@ func CreateHNHandler(num int, duration time.Duration, tpl *template.Template) ht
 
 		err := tpl.Execute(w, tmpldata)
 		if err != nil {
-			log.Printf(" ========= Template error ======= \n" + err.Error())
-			return
+			printErr(err.Error())
 		}
 	}
+}
+
+func printErr(err string) {
+	log.Printf("===== ERROR =====")
+	log.Printf(err)
 }

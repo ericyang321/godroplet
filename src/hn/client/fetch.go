@@ -57,7 +57,7 @@ func (c *Client) init() {
 	}
 }
 
-// GetTopIds fetches a list of top 100 hacker news ID articles, and save them on passed list
+// GetTopIds fetches a list of top 100 hacker news item IDs.
 func (c *Client) GetTopIds() ([]int, error) {
 	c.init()
 
@@ -74,7 +74,7 @@ func (c *Client) GetTopIds() ([]int, error) {
 	return topIDs, nil
 }
 
-// GetItem http fetch a single hacker news item by its id
+// GetItem http fetch a single hacker news item by its id, returning JSON structure
 func (c *Client) GetItem(id int) (Item, error) {
 	c.init()
 
@@ -93,8 +93,9 @@ func (c *Client) GetItem(id int) (Item, error) {
 	return item, nil
 }
 
-// GuaranteedTopArticles will fetch number of articles from params
-// and will guarantee number requested when fetch errors may be encountered
+// GuaranteedTopArticles will fetch the top x items in hacker news,
+// and will guarantee exact number of items returned in case any specific
+// hacker news item fetch errors out.
 func (c *Client) GuaranteedTopArticles(num int) ([]Article, error) {
 	c.init()
 

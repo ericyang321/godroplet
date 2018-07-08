@@ -40,10 +40,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	hnTemplate := template.Must(template.ParseFiles("./assets/hn/index.html"))
+	hnTemplate := template.Must(template.ParseFiles("./assets/hn.html"))
 	mux := http.NewServeMux()
 	// Routes
-	mux.Handle("/assets", http.FileServer(http.Dir("./assets")))
+	mux.Handle("/", http.FileServer(http.Dir("./assets")))
 	mux.HandleFunc("/parse-link-tags", linkparser.HandlerFunc)
 	mux.Handle("/hn", worker.CreateHNHandler(30, 10*time.Minute, hnTemplate))
 

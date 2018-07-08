@@ -1,0 +1,49 @@
+body {
+  font-family: "sans-serif";
+  background-color: #f4f4f4;
+}
+
+.list {
+  list-style-type: none;
+  padding-right: 30px;
+}
+
+.article {
+  list-style-type: none;
+}
+
+.title {
+  color: #000;
+  font-size: 25px;
+  text-decoration: none;
+}
+
+.host {
+    font-size: 25px;
+    color: #d3d3d3;
+    font-style: italic;
+}
+
+.title:visited {
+  color: #d3d3d3;
+}
+
+.title:hover {
+  color: #0000ee;
+  text-decoration: underline;
+}
+
+.comments {
+    text-decoration: none;
+    color: #000;
+}
+
+.comments:hover {
+    color: #0000ee;
+    text-decoration: underline;
+}
+
+.comments:visited {
+    text-decoration: none;
+    color: #000;
+}

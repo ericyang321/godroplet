@@ -51,7 +51,7 @@ func (w *Worker) InitializeTimer() {
 func CreateHNHandler(num int, duration time.Duration, tpl *template.Template) http.HandlerFunc {
 	var cache []fetch.Article
 	worker := Worker{
-		numOfArticles: 30,
+		numOfArticles: 40,
 		tickDuration:  15 * time.Minute,
 		cache:         &cache,
 	}

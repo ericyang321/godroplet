@@ -9,16 +9,16 @@
     <title>HN</title>
 </head>
 <body>
-    <ol>
+    <ul class="list">
         {{range .Articles}}
-        <li>
-            <a href="{{.URL}}">{{.Title}}</a>
+        <li class="article">
+            <a class="title" href="{{.URL}}" target="_blank">{{.Title}}</a>
             <span class="host">({{.Host}})</span>
             <p>
-                <a href="{{.YcombURL}}">View Comments</a>
+                <a class="comments" href="{{.YcombURL}}" target="_blank">{{.CommentLen}} Comments</a>
             </p>
         </li>
         {{end}}
-    </ol>
+    </ul>
 </body>
 </html>

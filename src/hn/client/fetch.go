@@ -31,8 +31,8 @@ type Item struct {
 	Type  string `json:"type"`
 	Text  string `json:"text"`
 	URL   string `json:"url"`
+	Kids  []int  `json:"kids"`
 	// Unused keys
-	// Kids        []int  `json:"kids"`
 	// Descendants int    `json:"descendants"`
 }
 
@@ -40,8 +40,9 @@ type Item struct {
 // and hacker news post url
 type Article struct {
 	Item
-	Host     string
-	YcombURL string
+	Host       string
+	YcombURL   string
+	CommentLen int
 }
 
 // pylon is used to relay successfully decoded Item or error through go channel
@@ -181,6 +182,7 @@ func createArticle(item Item) Article {
 	if err == nil {
 		article.Host = strings.TrimPrefix(articleURL.Hostname(), "www.")
 		article.YcombURL = fmt.Sprintf("%s%d", YCOMB_ITEM_URL, article.ID)
+		article.CommentLen = len(item.Kids)
 	}
 	return article
 }

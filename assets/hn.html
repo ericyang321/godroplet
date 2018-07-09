@@ -13,10 +13,9 @@
         {{range .Articles}}
         <li class="article">
             <a class="title" href="{{.URL}}" target="_blank">{{.Title}}</a>
-            <span class="host">({{.Host}})</span>
-            <p>
-                <a class="comments" href="{{.YcombURL}}" target="_blank">{{.CommentLen}} Comments</a>
-            </p>
+            <span class="host">
+                ({{.Host}} <a class="comment-link" href="{{.YcombURL}}">{{.CommentLen}}</a>)
+            </span>
         </li>
         {{end}}
     </ul>

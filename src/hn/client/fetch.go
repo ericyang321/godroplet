@@ -23,17 +23,17 @@ type Client struct {
 // Item represents a single item returned by the HN API
 // for this hacker HN website, we only care about stories and jobs
 type Item struct {
-	By    string `json:"by"`
-	ID    int    `json:"id"`
-	Score int    `json:"score"`
-	Time  int    `json:"time"`
-	Title string `json:"title"`
-	Type  string `json:"type"`
-	Text  string `json:"text"`
-	URL   string `json:"url"`
-	Kids  []int  `json:"kids"`
+	ID          int    `json:"id"`
+	Title       string `json:"title"`
+	Type        string `json:"type"`
+	URL         string `json:"url"`
+	Descendants int    `json:"descendants"`
 	// Unused keys
-	// Descendants int    `json:"descendants"`
+	// By    string `json:"by"`
+	// Score int    `json:"score"`
+	// Time  int    `json:"time"`
+	// Text  string `json:"text"`
+	// Kids  []int  `json:"kids"`
 }
 
 // Article is decoded hacker news JSON structure (icon) along with parsed article host
@@ -182,7 +182,7 @@ func createArticle(item Item) Article {
 	if err == nil {
 		article.Host = strings.TrimPrefix(articleURL.Hostname(), "www.")
 		article.YcombURL = fmt.Sprintf("%s%d", YCOMB_ITEM_URL, article.ID)
-		article.CommentLen = len(item.Kids)
+		article.CommentLen = item.Descendants
 	}
 	return article
 }

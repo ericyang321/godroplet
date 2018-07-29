@@ -1,0 +1,3 @@
+HN
+
+A web worker that periodically fetches top Hacker News articles and updates an array of articles, for caching purposes.

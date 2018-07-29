@@ -8,8 +8,8 @@ import (
 	"os"
 	"time"
 
-	worker "github.com/ericyang321/godroplet/src/hn"
-	linkparser "github.com/ericyang321/godroplet/src/linkParser"
+	"github.com/ericyang321/godroplet/src/hn"
+	"github.com/ericyang321/godroplet/src/linkparser"
 )
 
 func determineListenAddress() (string, error) {
@@ -45,7 +45,7 @@ func main() {
 	// Routes
 	mux.Handle("/", http.FileServer(http.Dir("./assets")))
 	mux.HandleFunc("/parse-link-tags", linkparser.HandlerFunc)
-	mux.Handle("/hn", worker.CreateHNHandler(30, 10*time.Minute, hnTemplate))
+	mux.Handle("/hn", hn.CreateHNHandler(40, 15*time.Minute, hnTemplate))
 
 	// Force HTTPS redirect
 	secureMux := redirectTLS(mux)

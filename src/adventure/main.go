@@ -33,7 +33,7 @@ func createHandler(key string, blob *map[string]arc) http.HandlerFunc {
 }
 
 func slurpJSON() map[string]arc {
-	raw, readErr := ioutil.ReadFile("./gopher.json")
+	raw, readErr := ioutil.ReadFile("./story.json")
 	blob := make(map[string]arc)
 	if readErr != nil {
 		fmt.Println(readErr.Error())

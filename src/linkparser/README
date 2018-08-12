@@ -1,3 +1,0 @@
-Link Parser
-
-Link parser is an endpoint that takes HTML in string form, and returns a JSON listing all the <a> link tags inside of HTML string. Link parser is accessible through post requests to https://godroplet.io/parse-link-tags as text/plain.

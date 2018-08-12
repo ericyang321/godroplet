@@ -32,7 +32,7 @@ func (w *Worker) InitializeTimer() {
 		for {
 			articles, err := f.GuaranteedTopArticles(w.numOfArticles)
 			if err != nil {
-				printErr(err.Error())
+				log.Fatal(err)
 			}
 
 			w.mutex.Lock()
@@ -44,8 +44,7 @@ func (w *Worker) InitializeTimer() {
 	}()
 }
 
-// CreateHNHandler generates a convenient HTTP handler that initializes a single worker, which
-// updates and fetches top 30 articles hacker news articles every 15 minutes.
+// CreateHNHandler generates a convenient HTTP handler that
 func CreateHNHandler(num int, duration time.Duration, tpl *template.Template) http.HandlerFunc {
 	var cache []Article
 	worker := Worker{
@@ -61,12 +60,7 @@ func CreateHNHandler(num int, duration time.Duration, tpl *template.Template) ht
 
 		err := tpl.Execute(w, tmpldata)
 		if err != nil {
-			printErr(err.Error())
+			log.Fatal(err)
 		}
 	}
-}
-
-func printErr(err string) {
-	log.Printf("============= ERROR ================")
-	log.Printf(err)
 }

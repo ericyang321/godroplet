@@ -2,14 +2,9 @@ package main
 
 import (
 	"fmt"
-	"html/template"
 	"log"
 	"net/http"
 	"os"
-	"time"
-
-	"github.com/ericyang321/godroplet/src/hn"
-	"github.com/ericyang321/godroplet/src/linkparser"
 )
 
 func determineListenAddress() (string, error) {
@@ -40,12 +35,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	hnTemplate := template.Must(template.ParseFiles("./assets/hn.html"))
 	mux := http.NewServeMux()
+	fileServer := http.FileServer(http.Dir("./ui/static"))
+
 	// Routes
-	mux.Handle("/", http.FileServer(http.Dir("./assets")))
-	mux.HandleFunc("/parse-link-tags", linkparser.HandlerFunc)
-	mux.Handle("/hn", hn.CreateHNHandler(40, 15*time.Minute, hnTemplate))
+	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
+	mux.HandleFunc("/", HandleHome)
+	// mux.HandleFunc("/parse-link-tags", HandleLinkParser)
+	mux.Handle("/hn", CreateTimedHNHandler())
 
 	// Force HTTPS redirect
 	secureMux := redirectTLS(mux)

@@ -2,7 +2,6 @@ package linkparser
 
 import (
 	"encoding/json"
-	"errors"
 	"io"
 	"net/http"
 	"strings"
@@ -26,24 +25,8 @@ type Links struct {
 	Result []Link
 }
 
-func contains(s []string, target string) bool {
-	for _, value := range s {
-		if value == target {
-			return true
-		}
-	}
-	return false
-}
-
-// returnErrJSON creates an error JSON and sends back bad request status code
-func returnErrJSON(w http.ResponseWriter, err error) {
-	w.WriteHeader(http.StatusBadRequest)
-	errInstance := Error{Message: err.Error()}
-	errJSON, _ := json.Marshal(errInstance)
-	w.Write(errJSON)
-}
-
-func returnLinksJSON(w http.ResponseWriter, linksList []Link) {
+// LinksJSON
+func LinksJSON(w http.ResponseWriter, linksList []Link) {
 	w.WriteHeader(http.StatusOK)
 	linksInstance := Links{Result: linksList}
 	linksJSON, _ := json.Marshal(linksInstance)
@@ -116,29 +99,4 @@ func Extract(r io.Reader) ([]Link, error) {
 	linkList := createLinksList(nodeList)
 
 	return linkList, nil
-}
-
-// HandlerFunc is a handler end point for user html submission
-func HandlerFunc(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		returnErrJSON(w, errors.New("Needs to be a post request"))
-		return
-	}
-	contentType := r.Header["Content-Type"]
-	isText := contains(contentType, "text/plain")
-	if isText == false {
-		returnErrJSON(w, errors.New("Post Content-Type must be 'text/plain'"))
-		return
-	}
-	parseErr := r.ParseForm()
-	if parseErr != nil {
-		returnErrJSON(w, parseErr)
-		return
-	}
-	links, extractErr := Extract(r.Body)
-	if extractErr != nil {
-		returnErrJSON(w, extractErr)
-		return
-	}
-	returnLinksJSON(w, links)
 }

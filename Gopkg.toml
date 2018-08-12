@@ -31,6 +31,8 @@
 
 [metadata.heroku]
   root-package = "github.com/ericyang321/godroplet"
+  install = ["./cmd/..."]
+  go-version = "go1.9"
 
 [[constraint]]
   branch = "master"

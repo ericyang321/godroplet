@@ -1,1 +1,1 @@
-web: godroplet
+web: web

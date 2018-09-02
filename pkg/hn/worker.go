@@ -1,66 +1,41 @@
 package hn
 
 import (
-	"html/template"
 	"log"
-	"net/http"
 	"sync"
 	"time"
 )
 
-type templateData struct {
+// TemplateData is struct specifically for holding template parsing data
+type TemplateData struct {
 	Articles []Article
 }
 
-// TODO: Separate worker's dependency on package fetch, and instead have Worker be pased in
-// a fetcher interface
-
 // Worker is a configurable periodic cache updater for scrapped hacker news articles.
-// Work works in conjunction with package
+// works in conjunction with fetcher
 type Worker struct {
-	cache         *[]Article
-	numOfArticles int
-	tickDuration  time.Duration
-	mutex         sync.Mutex
+	Cache         *[]Article
+	NumOfArticles int
+	TickDuration  time.Duration
+	Mutex         sync.Mutex
 }
 
 // InitializeTimer creates a timed instance that hot swaps cache of hacker news articles after certain intervals.
 func (w *Worker) InitializeTimer() {
-	var f Client
+	var c Client
 	go func() {
-		tick := time.NewTicker(w.tickDuration)
+		tick := time.NewTicker(w.TickDuration)
 		for {
-			articles, err := f.GuaranteedTopArticles(w.numOfArticles)
+			articles, err := c.GuaranteedTopArticles(w.NumOfArticles)
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			w.mutex.Lock()
-			*(w.cache) = articles
-			w.mutex.Unlock()
+			w.Mutex.Lock()
+			*(w.Cache) = articles
+			w.Mutex.Unlock()
 
 			<-tick.C
 		}
 	}()
-}
-
-// CreateHNHandler generates a convenient HTTP handler that
-func CreateHNHandler(num int, duration time.Duration, tpl *template.Template) http.HandlerFunc {
-	var cache []Article
-	worker := Worker{
-		numOfArticles: num,
-		tickDuration:  duration,
-		cache:         &cache,
-	}
-	worker.InitializeTimer()
-	return func(w http.ResponseWriter, r *http.Request) {
-		worker.mutex.Lock()
-		tmpldata := templateData{Articles: cache}
-		worker.mutex.Unlock()
-
-		err := tpl.Execute(w, tmpldata)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
 }

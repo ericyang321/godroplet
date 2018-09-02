@@ -35,14 +35,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	mux := http.NewServeMux()
-	fileServer := http.FileServer(http.Dir("./ui/static"))
-
-	// Routes
-	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
-	mux.HandleFunc("/", HandleHome)
-	// mux.HandleFunc("/parse-link-tags", HandleLinkParser)
-	mux.Handle("/hn", CreateTimedHNHandler())
+	mux := CreateMux()
 
 	// Force HTTPS redirect
 	secureMux := redirectTLS(mux)
